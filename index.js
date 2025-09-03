@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "https://e-learning-front-gamma.vercel.app",  // frontend origin
+  origin: "http://localhost:5173",  // frontend origin
   credentials: true,                // allow cookies/session
 }));
 
