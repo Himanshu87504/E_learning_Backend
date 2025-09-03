@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "https://e-learning-front-neam1nqb8-himanshu87504s-projects.vercel.app",  // frontend origin
+  origin: "https://e-learning-front-gamma.vercel.app",  // frontend origin
   credentials: true,                // allow cookies/session
 }));
 
