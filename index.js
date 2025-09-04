@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "https://elearning-frontend-theta.vercel.app",  // frontend origin
+  origin: "https://elearning-frontend-3k7r.vercel.app",  // frontend origin
   credentials: true,                // allow cookies/session
 }));
 
