@@ -88,16 +88,27 @@ export const checkout = TryCatch(async (req, res) => {
 
 // ✅ Stripe Payment Verification
 export const paymentVerification = TryCatch(async (req, res) => {
-  if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+  
 
-  const { session_id, courseId } = req.body;
-  if (!session_id || !courseId)
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { session_id } = req.body;
+  const courseId = req.params.id;
+
+  if (!session_id || !courseId) {
     return res.status(400).json({ message: "Session ID and Course ID are required" });
+  }
 
+  // Retrieve session from Stripe
   const session = await stripe.checkout.sessions.retrieve(session_id);
-  if (!session) return res.status(404).json({ message: "Stripe session not found" });
+  if (!session) {
+    return res.status(404).json({ message: "Stripe session not found" });
+  }
 
   if (session.payment_status === "paid") {
+    // Save payment info if not already saved
     let payment = await Payment.findOne({ stripe_session_id: session.id });
     if (!payment) {
       payment = await Payment.create({
@@ -111,7 +122,16 @@ export const paymentVerification = TryCatch(async (req, res) => {
     const user = await User.findById(req.user._id);
     const course = await Courses.findById(courseId);
 
-    if (!user.subscription.includes(course._id)) {
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Check if user already subscribed
+    const alreadySubscribed = user.subscription.some((id) =>
+      id.equals(course._id)
+    );
+
+    if (!alreadySubscribed) {
       user.subscription.push(course._id);
 
       await Progress.create({
@@ -126,13 +146,17 @@ export const paymentVerification = TryCatch(async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Course Purchased Successfully",
-      course: { _id: course._id, title: course.title, description: course.description, image: course.image },
+      course: {
+        _id: course._id,
+        title: course.title,
+        description: course.description,
+        image: course.image,
+      },
     });
   } else {
     return res.status(400).json({ message: "Payment Failed" });
   }
 });
-
 // ✅ Add Progress
 export const addProgress = TryCatch(async (req, res) => {
   const progress = await Progress.findOne({ user: req.user._id, course: req.query.course });
