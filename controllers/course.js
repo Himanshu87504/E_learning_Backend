@@ -79,7 +79,7 @@ export const checkout = TryCatch(async (req, res) => {
       },
     ],
     mode: "payment",
-    success_url: "https://elearning-frontend-theta.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id}",
+    success_url: `https://elearning-frontend-theta.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id}`,
     cancel_url: "https://elearning-frontend-theta.vercel.app/payment/failed",
   });
 
