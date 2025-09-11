@@ -60,11 +60,14 @@ export const checkout = TryCatch(async (req, res) => {
   if (!req.user) return res.status(401).json({ message: "Unauthorized" });
 
   const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
   const course = await Courses.findById(req.params.id);
   if (!course) return res.status(404).json({ message: "Course not found" });
 
-  if (user.subscription.includes(course._id))
+  if (user.subscription.some(id => id.toString() === course._id.toString())) {
     return res.status(400).json({ message: "You already have this course" });
+  }
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -72,24 +75,29 @@ export const checkout = TryCatch(async (req, res) => {
       {
         price_data: {
           currency: "inr",
-          product_data: { name: course.title, description: course.description },
-          unit_amount: Number(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.description,
+          },
+          unit_amount: Math.round(course.price * 100), // Convert to paise
         },
         quantity: 1,
       },
     ],
     mode: "payment",
-    success_url:`https://elearning-frontend-3k7r.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id}`,
-    cancel_url:"https://elearning-frontend-3k7r.vercel.app/payment/failed",
-
+      success_url:`https://elearning-frontend-3k7r.vercel.app/payment-success?session_id={CHECKOUT_SESSION_ID}&courseId=${course._id}`,    
+      cancel_url:"https://elearning-frontend-3k7r.vercel.app/payment/failed",
   });
 
-  res.status(201).json({ url: session.url, sessionId: session.id, courseId: course._id });
+  return res.status(201).json({
+    url: session.url,
+    sessionId: session.id,
+    courseId: course._id,
+  });
 });
 
-// ✅ Stripe Payment Verification
 export const paymentVerification = TryCatch(async (req, res) => {
-  
+
 
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
