@@ -19,7 +19,7 @@ router.get("/lecture/:id", isAuth, fetchLecture);
 router.get("/mycourse", isAuth, getMyCourses);
 router.post("/verification/:id", isAuth, paymentVerification);
 
-router.post("/checkout/:id", isAuth, checkout);
+router.post("/course/checkout/:id", isAuth, checkout);
 
 
 export default router;
